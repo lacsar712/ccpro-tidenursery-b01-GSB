@@ -44,9 +44,12 @@ docker compose up --build
 1. **Auth**：JWT 登录（OAuth2 Password），`/api/auth/login`、`/api/auth/me`
 2. **Hatchery 育苗场**：`name`、`seawaterSource`、`notes`
 3. **Pond 育苗塘**：`hatcheryId`、`pondCode`、`species`、`volumeM3`、`status(stocked|dry|quarantine)`；同场 `pondCode` 唯一
-4. **WaterSample 水质样**：`pondId`、`sampledAt`、`tempC`、`salinityPpt`、`doMgL`、`ph`、`notes`；`doMgL > 0` 且 `ph ∈ [6,9]`，否则返回 **400**
+4. **WaterSample 水质样**：`pondId`、`sampledAt`、`tempC`、`salinityPpt`、`doMgL`、`ph`、`depthM`（**采样深度，米，0.2–3**）、`transparencyCm`（**透明度，厘米，1–200 的正整数**）、`notes`；`doMgL > 0` 且 `ph ∈ [6,9]`
+   - 采样深度与透明度**必须同时有效**：缺一、越界或透明度非正整数均返回 **400（中文）**；新建（POST）与更新（PUT `/api/water-samples/{id}`）调用后端同一校验函数
+   - 历史行两字段允许为空、可正常读取；但**任何更新都必须先补齐两字段**才能保存（更新时与历史值合并后再走同一校验，可空提交不放行）
+   - 列表支持 `?minDepth=<米>` 深度下限过滤（仅两字段齐全的行参与）；不带参数返回默认全量，过滤不会把全量结果污染为空
 5. **FeedEvent 投喂**：`pondId`、`fedAt`、`feedType`、`amountKg`、`operatorName`
-6. **Dashboard**：塘总数、quarantine 数、近 24h 采样数、近 7 日投喂总量 kg
+6. **Dashboard**：塘总数、quarantine 数、近 24h 采样数、近 7 日投喂总量 kg、**近一天平均透明度 cm**（`avgTransparencyLast24h`）与参与行数（`transparencySampleCount`）；均值只统计近 24h 内深度/透明度两字段齐全的行，齐全判定与列表过滤同源（`app/services/water_quality.py`），列表可见齐全行数与参与均值行数一致
 
 ## 前端页面
 

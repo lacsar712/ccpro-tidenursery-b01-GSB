@@ -11,6 +11,7 @@ from app.models.pond import Pond
 from app.models.user import User
 from app.models.water_sample import WaterSample
 from app.schemas.dashboard import DashboardStats
+from app.services.water_quality import complete_sample_conditions
 
 router = APIRouter(prefix="/api/dashboard", tags=["dashboard"])
 
@@ -37,9 +38,30 @@ def get_stats(
         .scalar()
         or 0.0
     )
+
+    # 近一天平均透明度：与列表齐全行判定共用 complete_sample_conditions，
+    # 只统计深度/透明度两字段齐全的行，口径三处同源。
+    depth_ok, transparency_ok = complete_sample_conditions()
+    transparency_count, transparency_avg = (
+        db.query(
+            func.count(WaterSample.id),
+            func.avg(WaterSample.transparency_cm),
+        )
+        .filter(
+            WaterSample.sampled_at >= now - timedelta(hours=24),
+            depth_ok,
+            transparency_ok,
+        )
+        .one()
+    )
+
     return DashboardStats(
         pond_total=pond_total,
         quarantine_count=quarantine_count,
         samples_last_24h=samples_last_24h,
         feed_kg_last_7d=float(feed_kg_last_7d),
+        avg_transparency_last_24h=(
+            float(transparency_avg) if transparency_count else None
+        ),
+        transparency_sample_count=transparency_count or 0,
     )

@@ -29,6 +29,10 @@ export type WaterSample = {
   salinityPpt: number
   doMgL: number
   ph: number
+  /** 采样深度（米，0.2–3）；历史行可空 */
+  depthM: number | null
+  /** 透明度（厘米，1–200 正整数）；历史行可空 */
+  transparencyCm: number | null
   notes?: string | null
 }
 
@@ -46,4 +50,8 @@ export type DashboardStats = {
   quarantineCount: number
   samplesLast24h: number
   feedKgLast7d: number
+  /** 近一天平均透明度（厘米），仅两字段齐全的行参与；无齐全行为 null */
+  avgTransparencyLast24h: number | null
+  /** 参与均值的行数，与列表两字段齐全行数同源 */
+  transparencySampleCount: number
 }

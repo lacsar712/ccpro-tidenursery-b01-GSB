@@ -79,6 +79,8 @@ def seed() -> None:
             now = datetime.now(timezone.utc)
             db.add_all(
                 [
+                    # —— 近一天内、深度/透明度两字段齐全的样（至少两条）——
+                    # 透明度 120/150/90，近 24h 均值 = 120.00 cm（3 行）
                     WaterSample(
                         pond_id=p1.id,
                         sampled_at=now - timedelta(hours=3),
@@ -86,6 +88,8 @@ def seed() -> None:
                         salinity_ppt=28.0,
                         do_mg_l=6.8,
                         ph=8.1,
+                        depth_m=1.0,
+                        transparency_cm=120,
                         notes="晨检正常",
                     ),
                     WaterSample(
@@ -95,6 +99,8 @@ def seed() -> None:
                         salinity_ppt=30.0,
                         do_mg_l=5.4,
                         ph=7.9,
+                        depth_m=1.5,
+                        transparency_cm=150,
                         notes="隔离塘加强监测",
                     ),
                     WaterSample(
@@ -104,7 +110,21 @@ def seed() -> None:
                         salinity_ppt=27.5,
                         do_mg_l=7.1,
                         ph=8.0,
+                        depth_m=0.8,
+                        transparency_cm=90,
                         notes=None,
+                    ),
+                    # —— 历史缺字段样：深度/透明度均为空，可读不可直接更新 ——
+                    WaterSample(
+                        pond_id=p2.id,
+                        sampled_at=now - timedelta(days=7),
+                        temp_c=24.8,
+                        salinity_ppt=31.0,
+                        do_mg_l=5.9,
+                        ph=8.2,
+                        depth_m=None,
+                        transparency_cm=None,
+                        notes="历史纸质台账补录，采样深度与透明度缺失",
                     ),
                     FeedEvent(
                         pond_id=p1.id,

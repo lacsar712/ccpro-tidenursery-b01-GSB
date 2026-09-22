@@ -17,6 +17,10 @@ class WaterSample(Base):
     salinity_ppt: Mapped[float] = mapped_column(Float, nullable=False)
     do_mg_l: Mapped[float] = mapped_column(Float, nullable=False)
     ph: Mapped[float] = mapped_column(Float, nullable=False)
+    # 采样深度（米，0.2–3）与透明度（厘米，1–200 正整数）必须同时有效。
+    # 历史行允许为空，但任何更新都必须先补齐两字段。
+    depth_m: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    transparency_cm: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
     notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
 
     pond: Mapped["Pond"] = relationship("Pond", back_populates="water_samples")
