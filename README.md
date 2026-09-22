@@ -44,9 +44,15 @@ docker compose up --build
 1. **Auth**：JWT 登录（OAuth2 Password），`/api/auth/login`、`/api/auth/me`
 2. **Hatchery 育苗场**：`name`、`seawaterSource`、`notes`
 3. **Pond 育苗塘**：`hatcheryId`、`pondCode`、`species`、`volumeM3`、`status(stocked|dry|quarantine)`；同场 `pondCode` 唯一
-4. **WaterSample 水质样**：`pondId`、`sampledAt`、`tempC`、`salinityPpt`、`doMgL`、`ph`、`notes`；`doMgL > 0` 且 `ph ∈ [6,9]`，否则返回 **400**
+4. **WaterSample 水质样**：`pondId`、`sampledAt`、`tempC`、`salinityPpt`、`doMgL`、`ph`、`samplingDepthM`、`transparencyCm`、`notes`
+   - `doMgL > 0` 且 `ph ∈ [6,9]`，否则返回 **400**
+   - `samplingDepthM` 采样深度，单位 **米**，合法区间 **[0.2, 3]**
+   - `transparencyCm` 透明度，单位 **厘米**，须为 **正整数且 ≤ 200**
+   - 两字段必须同时有效：缺一或越界返回 **400**（中文提示）；新建（POST）与更新（PUT）调用同一校验函数
+   - 历史行两字段可空读取，但任何更新必须先补齐两字段才能保存
+   - 列表支持深度下限过滤：`GET /api/water-samples?minDepth=0.5`（不传时返回全量）
 5. **FeedEvent 投喂**：`pondId`、`fedAt`、`feedType`、`amountKg`、`operatorName`
-6. **Dashboard**：塘总数、quarantine 数、近 24h 采样数、近 7 日投喂总量 kg
+6. **Dashboard**：塘总数、quarantine 数、近 24h 采样数、近 7 日投喂总量 kg、近 24h 平均透明度 `avgTransparencyCmLast24h`（厘米，只统计深度与透明度两字段齐全的行，`transparencyRowsLast24h` 为参与均值的行数）
 
 ## 前端页面
 

@@ -29,6 +29,9 @@ export type WaterSample = {
   salinityPpt: number
   doMgL: number
   ph: number
+  // 采样深度（米，0.2–3）与透明度（厘米，正整数 ≤200）；历史行可空
+  samplingDepthM?: number | null
+  transparencyCm?: number | null
   notes?: string | null
 }
 
@@ -46,4 +49,6 @@ export type DashboardStats = {
   quarantineCount: number
   samplesLast24h: number
   feedKgLast7d: number
+  avgTransparencyCmLast24h?: number | null
+  transparencyRowsLast24h: number
 }

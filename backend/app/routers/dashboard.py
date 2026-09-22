@@ -11,6 +11,7 @@ from app.models.pond import Pond
 from app.models.user import User
 from app.models.water_sample import WaterSample
 from app.schemas.dashboard import DashboardStats
+from app.services.water_samples import complete_pair_condition
 
 router = APIRouter(prefix="/api/dashboard", tags=["dashboard"])
 
@@ -37,9 +38,25 @@ def get_stats(
         .scalar()
         or 0.0
     )
+    # 近 24h 平均透明度：与列表筛选共用 complete_pair_condition() 口径，
+    # 只统计两字段齐全的行；直接对这批行求均值，与手工核算一致。
+    complete_rows_24h = (
+        db.query(WaterSample)
+        .filter(WaterSample.sampled_at >= now - timedelta(hours=24))
+        .filter(complete_pair_condition())
+        .all()
+    )
+    transparency_rows_last_24h = len(complete_rows_24h)
+    avg_transparency_cm_last_24h = (
+        sum(r.transparency_cm for r in complete_rows_24h) / transparency_rows_last_24h
+        if transparency_rows_last_24h
+        else None
+    )
     return DashboardStats(
         pond_total=pond_total,
         quarantine_count=quarantine_count,
         samples_last_24h=samples_last_24h,
         feed_kg_last_7d=float(feed_kg_last_7d),
+        avg_transparency_cm_last_24h=avg_transparency_cm_last_24h,
+        transparency_rows_last_24h=transparency_rows_last_24h,
     )

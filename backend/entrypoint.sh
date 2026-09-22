@@ -24,6 +24,24 @@ PY
 echo "Creating tables..."
 python -c "from app.database import Base, engine; from app import models; Base.metadata.create_all(bind=engine)"
 
+echo "Ensuring water_samples depth/transparency columns..."
+python - <<'PY'
+# create_all 不会给已存在的表补列；对旧数据卷幂等加列（历史行保持 NULL 可空）。
+from sqlalchemy import text
+from app.database import engine
+
+with engine.begin() as conn:
+    conn.execute(text(
+        "ALTER TABLE water_samples "
+        "ADD COLUMN IF NOT EXISTS sampling_depth_m DOUBLE PRECISION"
+    ))
+    conn.execute(text(
+        "ALTER TABLE water_samples "
+        "ADD COLUMN IF NOT EXISTS transparency_cm INTEGER"
+    ))
+print("Columns ready.")
+PY
+
 echo "Seeding data..."
 python -c "from app.seed import seed; seed()"
 

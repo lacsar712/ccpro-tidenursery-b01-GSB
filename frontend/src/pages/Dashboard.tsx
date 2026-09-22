@@ -16,7 +16,7 @@ export default function Dashboard() {
     <div>
       <header className="page-header">
         <h1>运行看板</h1>
-        <p className="muted">塘口状态 · 近 24h 采样 · 近 7 日投喂</p>
+        <p className="muted">塘口状态 · 近 24h 采样 · 近 7 日投喂 · 近 24h 平均透明度</p>
       </header>
       {error && <div className="error">{error}</div>}
       <div className="stat-grid">
@@ -36,6 +36,18 @@ export default function Dashboard() {
           <div className="stat-label">近 7 日投喂总量 (kg)</div>
           <div className="stat-value">
             {stats ? stats.feedKgLast7d.toFixed(2) : '—'}
+          </div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-label">近 24h 平均透明度 (cm)</div>
+          <div className="stat-value">
+            {stats
+              ? stats.avgTransparencyCmLast24h != null
+                ? `${stats.avgTransparencyCmLast24h.toFixed(2)} (${
+                      stats.transparencyRowsLast24h
+                    } 条)`
+                : '—'
+              : '—'}
           </div>
         </div>
       </div>
